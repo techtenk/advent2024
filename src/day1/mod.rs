@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use std::io::BufRead;
-use std::iter::Map;
 
 pub(crate) fn run() {
     let input = include_bytes!("input.txt");
@@ -23,7 +22,7 @@ pub(crate) fn run() {
     // make a map out of list2
     let mut listmap: HashMap<i32, i32> = HashMap::new();
     for item in list2.iter() {
-        let mut entry = listmap.entry(*item).or_insert(0);
+        let entry = listmap.entry(*item).or_insert(0);
         *entry += 1;
     }
     // now total up the similarly score
