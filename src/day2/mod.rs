@@ -9,11 +9,20 @@ enum Direction {
 }
 
 pub(crate) fn run() {
+
+    let safe_counter = count_safe_reports(false);
+    println!("Number of safe reports (no dampener): {}", safe_counter);
+    let safe_counter = count_safe_reports(true);
+    println!("Number of safe reports (with dampener): {}", safe_counter);
+}
+
+fn count_safe_reports(dampener: bool) -> i32 {
     let input = include_bytes!("input.txt");
 
     let mut safe_counter = 0;
     for result in input.lines() {
         let line = result.unwrap();
+        let mut dampener_expended = !dampener; // if there isn't a dampener (part 1) then expend it immediately
         let mut cursor = line.split_whitespace();
         let mut safe = true;
         let mut previous = None;
@@ -40,6 +49,10 @@ pub(crate) fn run() {
                 previous = Some(next);
                 continue;
             }
+            if !dampener_expended {
+                dampener_expended = true;
+                continue;
+            }
             safe = false;
             break;
         }
@@ -50,5 +63,5 @@ pub(crate) fn run() {
             safe_counter += 1;
         }
     }
-    println!("Number of safe reports: {}", safe_counter);
+    safe_counter
 }
