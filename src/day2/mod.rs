@@ -22,46 +22,56 @@ fn count_safe_reports(dampener: bool) -> i32 {
     let mut safe_counter = 0;
     for result in input.lines() {
         let line = result.unwrap();
-        let mut dampener_expended = !dampener; // if there isn't a dampener (part 1) then expend it immediately
-        let mut cursor = line.split_whitespace();
-        let mut safe = true;
-        let mut previous = None;
-        let mut direction = None;
-        while let Some(next_itr) = cursor.next() {
-            let next = next_itr.parse::<i32>().unwrap();
-            if previous == None {
-                previous = Some(next);
-                continue;
+        let mut lines_to_check = Vec::new();
+        if dampener {
+            for (i, _) in line.split_whitespace().enumerate() {
+                let mut new_line = line.split_whitespace().collect::<Vec<&str>>();
+                new_line.remove(i);
+                lines_to_check.push(new_line.join(" "));
             }
-            if !direction.is_some() {
-                direction = match next - previous.unwrap() {
-                    -1000..=0 => Some(NEGATIVE),
-                    1..1000 => Some(POSITIVE),
-                    _ => None,
-                };
-            }
-            let diff = next - previous.unwrap();
-
-            if diff.is_positive() && direction == Some(POSITIVE) && diff.abs() <= 3 {
-                previous = Some(next);
-                continue;
-            } else if diff.is_negative() && direction == Some(NEGATIVE) && diff.abs() <= 3 {
-                previous = Some(next);
-                continue;
-            }
-            if !dampener_expended {
-                dampener_expended = true;
-                continue;
-            }
-            safe = false;
-            break;
+        } else {
+            lines_to_check.push(line);
         }
-        if let Ok(_) = std::env::var("AOC_DEBUG") {
-            println!("Line {} is safe: {}", line, safe);
-        }
-        if safe {
+        if lines_to_check.iter().any(|line| check_line(line.to_string())) {
             safe_counter += 1;
         }
     }
     safe_counter
+}
+
+fn check_line(line: String) -> bool {
+    let mut cursor = line.split_whitespace();
+    let mut safe = true;
+    let mut previous = None;
+    let mut direction = None;
+    while let Some(next_itr) = cursor.next() {
+        let next = next_itr.parse::<i32>().unwrap();
+        if previous == None {
+            previous = Some(next);
+            continue;
+        }
+        if !direction.is_some() {
+            direction = match next - previous.unwrap() {
+                -1000..=0 => Some(NEGATIVE),
+                1..1000 => Some(POSITIVE),
+                _ => None,
+            };
+        }
+        let diff = next - previous.unwrap();
+
+        if diff.is_positive() && direction == Some(POSITIVE) && diff.abs() <= 3 {
+            previous = Some(next);
+            continue;
+        } else if diff.is_negative() && direction == Some(NEGATIVE) && diff.abs() <= 3 {
+            previous = Some(next);
+            continue;
+        }
+
+        safe = false;
+        break;
+    }
+    if let Ok(_) = std::env::var("AOC_DEBUG") {
+        println!("Line {} is safe: {}", line, safe);
+    }
+    safe
 }
