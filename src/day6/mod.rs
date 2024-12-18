@@ -23,7 +23,7 @@ pub(crate) fn run(test: bool) {
     let mut obstruction_positions: Vec<(usize, usize)> = Vec::new();
     for (row, column) in part1 {
         // println!("Checking position: {}, {}", row, column);
-        let mut new_input = input.clone().to_string();
+        let mut new_input = input.to_string();
         if new_input.chars().nth(row * width + column).unwrap() == '^' {
             // we are already at the starting position, no need to check this one
             continue;
@@ -31,7 +31,7 @@ pub(crate) fn run(test: bool) {
         new_input.replace_range((row * width + column)..(row * width + column + 1), "#");
 
         match simulate(&new_input) {
-            Ok(visited) => {
+            Ok(_) => {
                 // found a way out, continue to the next position
                 continue;
             },

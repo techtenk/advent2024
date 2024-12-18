@@ -19,5 +19,5 @@ fn main() {
         day5::run();
         day6::run(false);
     }
-    day7::run(true);
+    day7::run(false);
 }
