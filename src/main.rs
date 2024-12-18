@@ -8,6 +8,7 @@ mod day3;
 mod day4;
 mod day5;
 mod day6;
+mod day7;
 
 fn main() {
     if args().any(|arg| arg.contains("--all")) {
@@ -16,6 +17,7 @@ fn main() {
         day3::run();
         day4::run();
         day5::run();
+        day6::run(false);
     }
-    day6::run(false);
+    day7::run(true);
 }
