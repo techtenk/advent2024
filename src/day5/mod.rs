@@ -66,7 +66,7 @@ pub(crate) fn run() {
     };
 
 
-    for mut update in &mut invalid_updates {
+    for update in &mut invalid_updates {
         update.sort_by(custom_sort);
     }
 
