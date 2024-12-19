@@ -1,6 +1,6 @@
 extern crate core;
 
-use std::env::args;
+use std::env::{args, Args};
 
 mod day1;
 mod day2;
@@ -13,6 +13,7 @@ mod day8;
 pub(crate) mod utils;
 
 fn main() {
+    let test_mode = args().any(|arg| arg == "--test");
     if args().any(|arg| arg.contains("--all")) {
         day1::run();
         day2::run();
@@ -22,5 +23,5 @@ fn main() {
         day6::run(false);
         day7::run(false);
     }
-    day8::run(true);
+    day8::run(test_mode);
 }

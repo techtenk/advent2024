@@ -26,6 +26,7 @@ pub(crate) fn run(test: bool) {
     }
 
     let mut antinodes = Vec::new();
+    let mut line_antinodes = Vec::new();
     for c in map.keys().into_iter().copied() {
         if c == '.' {
             continue;
@@ -38,6 +39,7 @@ pub(crate) fn run(test: bool) {
                 let (x1, y1) = nodes[i];
                 let (x2, y2) = nodes[j];
                 let (antinode1, antinode2) = find_antinodes((x1, y1), (x2, y2));
+                line_antinodes.append(&mut find_all_nodes_in_line((x1, y1), (x2, y2), width));
                 if antinode1.is_some() {
                     let (x, y) = antinode1.unwrap();
                     if puzzle.is_in_bounds(x, y) {
@@ -56,59 +58,48 @@ pub(crate) fn run(test: bool) {
 
 
     antinodes.sort();
-    println!("Found {:?} antinodes", antinodes);
+    // println!("Found {:?} antinodes", antinodes);
     antinodes.dedup();
     println!("Found {} antinodes", antinodes.len());
+    line_antinodes.sort();
+    // println!("Found {:?} line antinodes", line_antinodes);
+    line_antinodes.dedup();
+    println!("Found {:?} line antinodes", line_antinodes.len());
 }
 fn find_antinodes(node1: (usize, usize), node2: (usize, usize)) -> (Option<(usize, usize)>, Option<(usize, usize)>) {
     let (x1, y1) = node1;
     let (x2, y2) = node2;
-    let row_diff = x2 as isize - x1 as isize;
-    let col_diff = y2 as isize - y1 as isize;
-    // add row diff to the larger row and col diff to the larger col to make antinode 1
-    let (x3, x4) =
-        'x:{
-            if row_diff > 0 {
-                // x2 is the larger row
-                let x3 = x2 + row_diff as usize;
-                if x1 as isize >= row_diff {
-                    let x4 = x1 - row_diff as usize;
-                    break 'x (Some(x3), Some(x4));
-                }
-                break 'x (Some(x3), None)
-            }
-            // x1 is the larger row
-            let x3 = x1 + row_diff as usize;
-            if x2 as isize >= row_diff {
-                let x4 = x2 - row_diff as usize;
-                break 'x (Some(x3), Some(x4));
-            }
-            (Some(x3), None)
-        };
-
-    let (y3, y4) =
-        'y: {
-            if col_diff > 0 {
-                // y2 is the larger col
-                let y3 = y2 + col_diff as usize;
-                if y1 as isize >= col_diff {
-                    let y4 = y1 - col_diff as usize;
-                    break 'y (Some(y3), Some(y4));
-                }
-                break 'y (Some(y3), None)
-            }
-            // y1 is the larger col
-            let y3 = y1 + col_diff.abs() as usize;
-            if y2 as isize >= col_diff.abs() {
-                let y4 = y2 - col_diff.abs() as usize;
-                break 'y (Some(y3), Some(y4));
-            }
-            (Some(y3), None)
-        };
-    match (x3, x4, y3, y4) {
-        (Some(x3), Some(x4), Some(y3), Some(y4)) => (Some((x3, y3)), Some((x4, y4))),
-        (Some(x3), Some(y3), _, _) => (Some((x3, y3)), None),
-        (_, _, Some(x4), Some(y4)) => (Some((x4, y4)), None),
+    let dx = x2 as i32 - x1 as i32;
+    let dy = y2 as i32 - y1 as i32;
+    let antinode1 = (x1 as i32 - dx, y1 as i32 - dy);
+    let antinode2 = (x2 as i32 + dx, y2 as i32 + dy);
+    match (antinode1.0 >= 0, antinode1.1 >= 0, antinode2.0>= 0, antinode2.1 >= 0) {
+        (true, true, true, true) => (Some((antinode1.0 as usize, antinode1.1 as usize)), Some((antinode2.0 as usize, antinode2.1 as usize))),
+        (true, true, _, _) => (Some((antinode1.0 as usize, antinode1.1 as usize)), None),
+        (_, _, true, true) => (None, Some((antinode2.0 as usize, antinode2.1 as usize))),
         _ => (None, None),
     }
+}
+
+fn find_all_nodes_in_line(node1: (usize, usize), node2: (usize, usize), width: usize) -> Vec<(usize, usize)> {
+    let (x1, y1) = node1;
+    let (x2, y2) = node2;
+    let dx = x2 as i32 - x1 as i32;
+    let dy = y2 as i32 - y1 as i32;
+    let mut nodes = Vec::new();
+    let mut x = x1 as i32;
+    let mut y = y1 as i32;
+    while x >= 0 && y >= 0 && x < width as i32 && y < width as i32 {
+        nodes.push((x as usize, y as usize));
+        x -= dx;
+        y -= dy;
+    }
+    x = x2 as i32;
+    y = y2 as i32;
+    while x >= 0 && y >= 0 && x < width as i32 && y < width as i32 {
+        nodes.push((x as usize, y as usize));
+        x += dx;
+        y += dy;
+    }
+    nodes
 }
