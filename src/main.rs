@@ -9,6 +9,8 @@ mod day4;
 mod day5;
 mod day6;
 mod day7;
+mod day8;
+pub(crate) mod utils;
 
 fn main() {
     if args().any(|arg| arg.contains("--all")) {
@@ -18,6 +20,7 @@ fn main() {
         day4::run();
         day5::run();
         day6::run(false);
+        day7::run(false);
     }
-    day7::run(false);
+    day8::run(true);
 }
