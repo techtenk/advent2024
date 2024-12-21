@@ -1,6 +1,6 @@
 extern crate core;
 
-use std::env::{args, Args};
+use std::env::{args};
 
 mod day1;
 mod day2;

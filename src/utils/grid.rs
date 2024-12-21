@@ -1,4 +1,4 @@
-use std::ops::Index;
+
 
 #[derive(Debug)]
 pub struct Grid<T> {
@@ -22,10 +22,6 @@ impl<T> Grid<T> where T: Clone + Copy {
 
     pub fn get(&self, row: usize, col: usize) -> Option<T> {
         self.cells[row * self.width + col]
-    }
-
-    pub fn get_cells(&self) -> &Vec<Option<T>> {
-        &self.cells
     }
 
     pub fn is_in_bounds(&self, x: usize, y: usize) -> bool {

@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::iter::Rev;
 use std::str::Chars;
 
@@ -16,7 +15,7 @@ impl<'a> Iterator for DiskReverseIterator<'a> {
 
             let next = self.iterator.next()?;
             // parse next for how large this file block is
-            let file_size = next.to_digit(10).unwrap();
+            let file_size = next.to_digit(10)?;
             println!("Adding {} blocks of {} to buffer", file_size, self.last_file_id);
             self.buffer.append(&mut vec![self.last_file_id; file_size as usize]);
             // now pop the next free space and throw it away
@@ -160,7 +159,7 @@ pub(crate) fn run(test: bool) {
         // find the free space that fits this file
         // println!("Trying to find space for file: {} size: {}", file.id, file.size);
 
-        let mut space = free_spaces.iter_mut().find(|space| space.size >= file.size && space.position <= file.position);
+        let space = free_spaces.iter_mut().find(|space| space.size >= file.size && space.position <= file.position);
         if let Some(s) = space {
             let orig_pos = file.position;
             // println!("Found space found: {} size: {} ", s.position, s.size);
@@ -178,7 +177,7 @@ pub(crate) fn run(test: bool) {
             }
             // ugg, we also have to combine the free spaces on either side, if any. That's a headache :(
             // create a new free space
-            let mut new_space = FreeSpace {
+            let new_space = FreeSpace {
                 size: file.size,
                 position: orig_pos,
             };
