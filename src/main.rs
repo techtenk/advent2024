@@ -12,6 +12,7 @@ mod day7;
 mod day8;
 pub(crate) mod utils;
 mod day9;
+mod day10;
 
 fn main() {
     let test_mode = args().any(|arg| arg == "--test");
@@ -24,6 +25,7 @@ fn main() {
         day6::run(false);
         day7::run(false);
         day8::run(false);
+        day9::run(false);
     }
-    day9::run(test_mode);
+    day10::run(test_mode);
 }
