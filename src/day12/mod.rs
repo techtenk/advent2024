@@ -12,38 +12,50 @@ pub(crate) fn run(test: bool) {
     let mut plots: Vec<HashSet<(usize, usize)>> = Vec::new();
     for row in 0..map.get_height() {
         for col in 0..map.get_width() {
-            // println!("Looking for plots that contain ({}, {}) with plant {}", row, col, map.get(row, col).unwrap());
-            // if cell is already in a plot, skip it
-            if plots.iter().any(|plot| plot.contains(&(row, col))) {
-                continue;
+            // make a plot for each square with it and it's adjacent
+            let plant = map.get(row, col).unwrap();
+            let mut miniset = HashSet::new();
+            miniset.insert((row, col));
+            let (left, right, up, down) = map.get_adjacent(row, col);
+            if left.is_some() && left.unwrap() == plant {
+                miniset.insert((row, col - 1));
             }
-            let c = map.get(row, col);
-            if c.is_some() {
-                let mut partial_plot = HashSet::new();
-                // recursively find all the connected plant spaces
-                find_plot(row, col, c.unwrap(), &map, &mut partial_plot);
-
-                // if any of the cells in this plot are already in another plot, merge them
-                let mut plot_to_merge: Option<&mut HashSet<(usize, usize)>> = None;
-                plots.iter_mut().any(|plot| {
-                    if partial_plot.iter().any(|cell| plot.contains(cell)) {
-                        plot_to_merge = Some(plot);
-                        true
-                    } else {
-                        false
-                    }
-                });
-                if let Some(ptm) = plot_to_merge.as_mut() {
-                    ptm.extend(partial_plot);
-                } else {
-                    // add the plot to the list of plots
-                    plots.push(partial_plot);
-                }
-
+            if right.is_some() && right.unwrap() == plant {
+                miniset.insert((row, col + 1));
             }
+            if up.is_some() && up.unwrap() == plant {
+                miniset.insert((row - 1, col));
+            }
+            if down.is_some() && down.unwrap() == plant {
+                miniset.insert((row + 1, col));
+            }
+
+            plots.push(miniset);
         }
     }
 
+    // for every plot in the list, check it for intersections against all other plots
+    let mut still_to_merge = plots;
+    let mut plots = Vec::new();
+    println!("Merging plots");
+    'checkplots: while let Some(mut i) = still_to_merge.pop() {
+        for j in 0..still_to_merge.len() {
+            let intersection: HashSet<_> = i.intersection(&still_to_merge[j]).collect();
+
+            if !intersection.is_empty() {
+                // merge the two plots
+                i.extend(still_to_merge[j].iter());
+
+                // println!("Merged plots {} and {} into {:?}", i, j, new_plot);
+                still_to_merge.remove(j);
+
+                still_to_merge.push(i);
+                continue 'checkplots;
+            }
+        }
+        plots.push(i);
+    }
+    println!("No more intersecting plots found");
     let mut perimeter_counts = Vec::new();
     for plot in &plots {
         let mut perimeter = 0;
@@ -64,9 +76,9 @@ pub(crate) fn run(test: bool) {
     let mut total_fence_cost = 0u32;
     for p in plots.iter().zip(perimeter_counts.iter()) {
         let first = p.0.iter().next().unwrap();
-        println!("{} plot is size: {}, perimeter {}", map.get(first.0, first.1).unwrap(), p.0.len(), p.1);
+        // println!("{} plot is size: {}, perimeter {}", map.get(first.0, first.1).unwrap(), p.0.len(), p.1);
 
-        /** Print the plots to look for ones that should connect but don't
+        /* Print the plots to look for ones that should connect but don't
         print the plots, for every plot we are going to print the whole map and if the point is in the plot, we print it
         if it is not in the plot but matches the letter, print the letter in lowercase
         otherwise, print .
@@ -97,30 +109,66 @@ pub(crate) fn run(test: bool) {
         total_fence_cost += (p.0.len() as u32) * p.1;
     }
     println!("Total fence cost: {}", total_fence_cost);
-}
 
-fn find_plot(row: usize, col: usize, plant: char, map: &Grid<char>, plot_points: &mut HashSet<(usize, usize)>) {
-    // base case, the cell does not match
-    if map.get(row, col) != Some(plant) {
-        return;
-    }
-    plot_points.insert((row, col));
-    // so we don't have infinite recursion, only check down and right
-    let right = map.get_right(row, col);
-    if right.is_some() {
-        // println!("Checking right: {}", right.unwrap());
-    }
-    match right {
-        Some(r) if r == plant => find_plot(row, col + 1, plant, map, plot_points),
-        _ => (),
-    }
-    let down = map.get_bottom(row, col);
-    if down.is_some() {
-        // println!("Checking down: {}", down.unwrap());
-    }
-    match down {
-        Some(d) if d == plant => find_plot(row + 1, col, plant, map, plot_points),
-        _ => (),
-    }
+    // part 2 we count it differently, I think it's just counting the "corners" of the plots
+    let mut total_fence_cost_discounted = 0u32;
+    for plot in plots {
+        let plant = map.get(plot.iter().next().unwrap().0, plot.iter().next().unwrap().1).unwrap();
+        let plotsize = plot.len() as u32;
+        let mut corners = 0;
+        for point in plot {
+            let plant = map.get(point.0, point.1).unwrap();
+            let (left, right, up, down) = map.get_adjacent(point.0, point.1);
 
+            let topleftcorner = match (left, up) {
+                (Some(c), Some(d)) if c != plant && d != plant => true,
+                (Some(c), Some(d)) if c == plant && d == plant => map.get(point.0 - 1, point.1 - 1).unwrap() != plant,
+                (Some(c), None) if c != plant => true,
+                (None, Some(d)) if d != plant => true,
+                (None, None) => true,
+                _ => false,
+            };
+            if topleftcorner {
+                corners += 1;
+            }
+            let toprightcorner = match (right, up) {
+                (Some(c), Some(d)) if c != plant && d != plant => true,
+                (Some(c), Some(d)) if c == plant && d == plant => map.get(point.0 - 1, point.1 + 1).unwrap() != plant,
+                (Some(c), None) if c != plant => true,
+                (None, Some(d)) if d != plant => true,
+                (None, None) => true,
+                _ => false,
+            };
+            if toprightcorner {
+                corners += 1;
+            }
+            let bottomleftcorner = match (left, down) {
+                (Some(c), Some(d)) if c != plant && d != plant => true,
+                (Some(c), Some(d)) if c == plant && d == plant => map.get(point.0 + 1, point.1 - 1).unwrap() != plant,
+                (Some(c), None) if c != plant => true,
+                (None, Some(d)) if d != plant => true,
+                (None, None) => true,
+                _ => false,
+            };
+            if bottomleftcorner {
+                corners += 1;
+            }
+            let bottomrightcorner = match (right, down) {
+                (Some(c), Some(d)) if c != plant && d != plant => true,
+                (Some(c), Some(d)) if c == plant && d == plant => map.get(point.0 + 1, point.1 + 1).unwrap() != plant,
+                (Some(c), None) if c != plant => true,
+                (None, Some(d)) if d != plant => true,
+                (None, None) => true,
+                _ => false,
+            };
+            if bottomrightcorner {
+                corners += 1;
+            }
+
+
+        }
+        println!("{} plot is size: {}, corners: {}", plant, plotsize, corners);
+        total_fence_cost_discounted += corners * plotsize;
+    }
+    println!("Total fence cost discounted: {}", total_fence_cost_discounted);
 }
