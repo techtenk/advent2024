@@ -34,22 +34,21 @@ impl<T> Grid<T> where T: Clone + Copy {
         }
     }
 
+    #[allow(dead_code)]
     pub fn set(&mut self, x: usize, y: usize, value: T) {
         self.cells[y * self.width + x] = Some(value);
     }
-
     pub fn get(&self, row: usize, col: usize) -> Option<T> {
         self.cells[row * self.width + col]
     }
-
+    #[allow(dead_code)]
     pub fn get_cells(&self) -> Vec<Option<T>> {
         self.cells.clone()
     }
-
     pub fn get_width(&self) -> usize {
         self.width
     }
-
+    #[allow(dead_code)]
     pub fn get_height(&self) -> usize {
         self.height
     }
@@ -74,7 +73,7 @@ impl<T> Grid<T> where T: Clone + Copy {
         }
         adjacent
     }
-
+    #[allow(dead_code)]
     pub fn get_left(&self, row: usize, col: usize) -> Option<T> {
         if col > 0 {
             self.get(row, col - 1)
@@ -82,7 +81,7 @@ impl<T> Grid<T> where T: Clone + Copy {
             None
         }
     }
-
+    #[allow(dead_code)]
     pub fn get_right(&self, row: usize, col: usize) -> Option<T> {
         if col < self.width - 1 {
             self.get(row, col + 1)
@@ -90,7 +89,7 @@ impl<T> Grid<T> where T: Clone + Copy {
             None
         }
     }
-
+    #[allow(dead_code)]
     pub fn get_top(&self, row: usize, col: usize) -> Option<T> {
         if row > 0 {
             self.get(row - 1, col)
@@ -98,7 +97,7 @@ impl<T> Grid<T> where T: Clone + Copy {
             None
         }
     }
-
+    #[allow(dead_code)]
     pub fn get_bottom(&self, row: usize, col: usize) -> Option<T> {
         if row < self.height - 1 {
             self.get(row + 1, col)

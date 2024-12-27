@@ -75,27 +75,29 @@ pub(crate) fn run(test: bool) {
 
     let mut total_fence_cost = 0u32;
     for p in plots.iter().zip(perimeter_counts.iter()) {
-        let first = p.0.iter().next().unwrap();
-        // println!("{} plot is size: {}, perimeter {}", map.get(first.0, first.1).unwrap(), p.0.len(), p.1);
+        if std::env::var("AOC_DEBUG").is_ok() {
+            let first = p.0.iter().next().unwrap();
+            // println!("{} plot is size: {}, perimeter {}", map.get(first.0, first.1).unwrap(), p.0.len(), p.1);
 
-        /* Print the plots to look for ones that should connect but don't
-        print the plots, for every plot we are going to print the whole map and if the point is in the plot, we print it
-        if it is not in the plot but matches the letter, print the letter in lowercase
-        otherwise, print .
-        for row in 0..map.get_height() {
-            for col in 0..map.get_width() {
-                let c = map.get(row, col).unwrap();
-                if p.0.contains(&(row, col)) {
-                    print!("{}", c);
-                } else if c == map.get(first.0, first.1).unwrap() {
-                    print!("{}", c.to_lowercase());
-                } else {
-                    print!(".");
+            /* Print the plots to look for ones that should connect but don't
+            print the plots, for every plot we are going to print the whole map and if the point is in the plot, we print it
+            if it is not in the plot but matches the letter, print the letter in lowercase
+            otherwise, print . */
+            for row in 0..map.get_height() {
+                for col in 0..map.get_width() {
+                    let c = map.get(row, col).unwrap();
+                    if p.0.contains(&(row, col)) {
+                        print!("{}", c);
+                    } else if c == map.get(first.0, first.1).unwrap() {
+                        print!("{}", c.to_lowercase());
+                    } else {
+                        print!(".");
+                    }
                 }
+                println!();
             }
-            println!();
         }
-        */
+
 
         // look for plots points that are contained in more than one plot
         for other_plot in plots.iter().filter(|plot| *plot != p.0) {
@@ -164,7 +166,6 @@ pub(crate) fn run(test: bool) {
             if bottomrightcorner {
                 corners += 1;
             }
-
 
         }
         println!("{} plot is size: {}, corners: {}", plant, plotsize, corners);

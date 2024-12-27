@@ -19,13 +19,6 @@ impl Stone {
 }
 
 impl StonesArrangement for Stone {
-    fn get_length(&self) -> usize {
-        1
-    }
-
-    fn get_first_stone(&self) -> Option<&Stone> {
-        Some(self)
-    }
 
     fn get_next_blink(&self) -> Box<dyn StonesArrangement> {
         // if mark is 0, return Stone::new(1)
@@ -49,13 +42,6 @@ impl StonesArrangement for Stone {
 }
 
 impl StonesArrangement for Vec<Stone> {
-    fn get_length(&self) -> usize {
-        self.len()
-    }
-
-    fn get_first_stone(&self) -> Option<&Stone> {
-        self.first()
-    }
 
     fn get_next_blink(&self) -> Box<dyn StonesArrangement> {
         let mut new_stones = Vec::new();
@@ -71,8 +57,6 @@ impl StonesArrangement for Vec<Stone> {
     }
 }
 trait StonesArrangement {
-    fn get_length(&self) -> usize;
-    fn get_first_stone(&self) -> Option<&Stone>;
     fn get_next_blink(&self) -> Box<dyn StonesArrangement>;
 
     fn get_stones(&self) -> Vec<Stone>;
